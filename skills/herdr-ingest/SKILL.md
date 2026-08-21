@@ -67,10 +67,10 @@ only place that decides a default.
 
 |id|prefix|ingests|needs|
 |---|---|---|---|
-|`sentry`|`sentry`|issues of one project active inside a window|`SENTRY_AUTH_TOKEN`|
+|`sentry`|`sentry`|issues of one project active inside a window|`SENTRY_AUTH_TOKEN`, `--org`, `--project`|
 |`linear`|`linear`|issues of one project or team, with description and discussion|`LINEAR_API_KEY`, `--team` or `--project`|
 |`github`|`gh`|issues and pull requests of one repository|`GITHUB_TOKEN`, `--repo`|
-|`json`|`item`|any command or file that prints JSON|`--json-map`|
+|`json`|`item`|any command or file that prints JSON|`--json-cmd`, or `--items-json`|
 
 Source flags append to `--help` once `--source` is set:
 `herdr-ingest --source github --help`.

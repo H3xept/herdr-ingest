@@ -32,7 +32,7 @@ LINEAR_PAGE_SIZE=50
 ingest_source_describe() {
   printf 'id\tlinear\n'
   printf 'name\tLinear\n'
-  printf 'summary\tissues of one project, with description and discussion\n'
+  printf 'summary\tissues of one team or project, with description and discussion\n'
   printf 'needs\tcurl jq\n'
 }
 
@@ -40,7 +40,7 @@ ingest_source_usage() {
   cat <<EOF
 linear source flags:
   --project REF        Linear project: a uuid, a project URL, a slug id or a name
-  --team KEY           Linear team key, e.g. ENG (default: $LINEAR_OPT_TEAM)
+  --team KEY           Linear team key, e.g. ENG (default: ${LINEAR_OPT_TEAM:-none})
                        --team or --project is required for a live fetch; give
                        both to narrow to that project within that team
   --api-base URL       Linear GraphQL endpoint (default: $LINEAR_OPT_API)
