@@ -15,19 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Parse every shipped script
+      # docs/demo/ is recording scaffolding rather than shipped code, but it is
+      # bash in this repo, so it holds the same line as everything else.
+      - name: Parse every script
         run: |
           for f in bin/herdr-ingest lazy-brief lib/herdr-ingest.sh \
                    lib/sources/*.sh profiles/*.sh examples/sources/*.sh \
-                   examples/summarise-git-blame; do
+                   examples/summarise-git-blame \
+                   docs/demo/*.sh docs/demo/bin/*; do
             bash -n "$f" || exit 1
           done
 
-      - name: Lint every shipped script
+      - name: Lint every script
         run: |
           shellcheck -S warning bin/herdr-ingest lazy-brief lib/herdr-ingest.sh \
             lib/sources/*.sh profiles/*.sh examples/sources/*.sh \
-            examples/summarise-git-blame
+            examples/summarise-git-blame \
+            docs/demo/*.sh docs/demo/bin/* docs/demo/bashrc
 
   test:
     runs-on: ${{ matrix.os }}

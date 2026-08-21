@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Stand-in for the agent in the demo tapes, passed via HERDR_INGEST_AGENT.
+#
+# The `y` gate's contract is that it execs the agent with the brief attached and
+# does nothing until then. This prints the invocation it received so a recording
+# can show the handoff without a real agent, an API key or a network on the
+# machine doing the recording. It is not shipped: `docs/` is not in package.json
+# `files`, and nothing in lib/ or bin/ refers to it.
+set -euo pipefail
+
+printf '\033[32m▶ agent started\033[0m %s\n\n' "$*"
+printf 'reading the brief …\n'
+sleep 1.2
+printf '\nthis is where your real agent takes over.\n'

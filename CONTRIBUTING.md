@@ -78,25 +78,51 @@ selection or spawning can be verified without an account anywhere.
 npm test
 ```
 
-Sixty-four `node:test` cases against a throwaway fixture: a temp `$HOME`, a temp
-farm with its own git checkout, a temp cache and a scrubbed `$PATH`. Nothing
-requires `herdr`, `zellij`, `fzf`, an agent or a token, and nothing reaches a
-tracker. **Keep it that way.** A test that needs a credential is a test nobody
-can run, including CI.
+Sixty-eight `node:test` cases against a throwaway fixture: a temp `$HOME`, a
+temp farm with its own git checkout, a temp cache and a scrubbed `$PATH`.
+Nothing requires `herdr`, `zellij`, `fzf`, an agent or a token, and nothing
+reaches a tracker. **Keep it that way.** A test that needs a credential is a
+test nobody can run, including CI.
 
-CI also parses and lints every shipped bash file:
+CI also parses and lints every bash file in the repo, `docs/demo/` included:
 
 ```bash
 for f in bin/herdr-ingest lazy-brief lib/herdr-ingest.sh lib/sources/*.sh \
-         profiles/*.sh examples/sources/*.sh examples/summarise-git-blame; do
+         profiles/*.sh examples/sources/*.sh examples/summarise-git-blame \
+         docs/demo/*.sh docs/demo/bin/*; do
   bash -n "$f" || exit 1
 done
 shellcheck -S warning bin/herdr-ingest lazy-brief lib/herdr-ingest.sh \
-  lib/sources/*.sh profiles/*.sh examples/sources/*.sh examples/summarise-git-blame
+  lib/sources/*.sh profiles/*.sh examples/sources/*.sh \
+  examples/summarise-git-blame docs/demo/*.sh docs/demo/bin/* docs/demo/bashrc
 ```
 
 Run `npm test` after any change to the engine, an adapter, `lazy-brief`, a
 profile, an example, `herdr-plugin.toml`, the agent skill, or version metadata.
+
+## The GIFs in the README
+
+`docs/*.gif` are build artifacts. Their source is the tapes in `docs/demo/`,
+which are [vhs](https://github.com/charmbracelet/vhs) scripts, so a recording is
+reproducible rather than a one-off screen capture. Re-record with:
+
+```bash
+brew install vhs gifsicle       # vhs brings ttyd and ffmpeg
+bash docs/demo/record.sh        # all three, or `record.sh gate` for one
+```
+
+`docs/demo/setup.sh` builds a throwaway farm under `/tmp/herdr-ingest-demo` from
+a fictional storefront, and `docs/demo/queue.json` is a fictional tracker
+payload. **A recording never touches a real tracker and never needs a token.**
+Keep it that way: a GIF is the most public artifact in the repo, and a leaked
+ticket in one is not recoverable.
+
+Two constraints worth knowing before you edit a tape. Every `Set` has to precede
+the first keystroke, which is why the shared tapes are split into
+`style.tape` and `boot.tape` and a tape that resizes sources them in that order.
+And `Wait` only matches whole lines, so it cannot see the gate's `[y/N]` prompt,
+which blocks mid-line on `read`; `gate.tape` uses `Sleep` throughout for that
+reason.
 
 ## Writing an adapter
 

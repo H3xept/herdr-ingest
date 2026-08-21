@@ -38,6 +38,8 @@ are the stable public contract.
   flags, carrying defaults and both hooks. A flag always beats a profile.
 - Selection over the canonical rows: `--badge`, `--state`, `--label`,
   `--match`, `--updated-last`, `--created-last`, `--sort`, `--limit`.
+  `--badge-order` supplies the severity ranking `--sort badge` needs, so a
+  generic payload can be ordered by a scale only its tracker knows.
 - Farm control: `--root`, `--main`, `--base`, `--prefix`,
   `--worktree-template`, `--branch-template`, all templated on
   `{prefix} {key} {ref} {slug}`.

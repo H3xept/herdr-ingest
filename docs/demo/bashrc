@@ -1,0 +1,5 @@
+# shellcheck shell=bash
+# The only startup file the demo login shell reads. Bash resets PS1 for every
+# interactive shell regardless of the environment, so the prompt has to be set
+# here rather than exported from env.sh.
+PS1='$ '

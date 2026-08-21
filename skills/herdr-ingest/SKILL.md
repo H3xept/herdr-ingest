@@ -171,7 +171,9 @@ assigning it, or the profile layer silently stops working for that knob.
 `--badge`, `--state`, `--label` take comma lists. `--match` is a
 case-insensitive regex over title and subtitle. `--updated-last` and
 `--created-last` take `5m`, `2h`, `2d`, `1w`. `--sort` takes `updated`,
-`created`, `age`, `badge`, `title`, `key` or `none`. `--limit` caps what is
+`created`, `age`, `badge`, `title`, `key` or `none`; `--sort badge` needs a
+ranking, which a built-in source ships and a generic payload supplies with
+`--badge-order critical,high,low`. `--limit` caps what is
 kept. Every filter runs over the canonical rows, so `--items-json` and a live
 fetch agree exactly.
 

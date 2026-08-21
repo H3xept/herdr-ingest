@@ -573,6 +573,39 @@ test('--sort badge orders by the severity the source declared', { skip: !HAS_JQ 
   assert.deepEqual(byUpdated.out.match(/PROJ-\w+/g), ['PROJ-9Z', 'PROJ-4F'], 'newest first');
 });
 
+test('--badge-order ranks badges the source never declared', { skip: !HAS_JQ || !HAS_GIT }, () => {
+  // The whole point of the flag: a generic payload carries whatever severity
+  // words its tracker uses, and the json source cannot know how to rank them.
+  const f = farm();
+  const items = payload([
+    { key: 'a', badge: 'low', title: 'a' },
+    { key: 'b', badge: 'critical', title: 'b' },
+    { key: 'c', badge: 'medium', title: 'c' },
+  ]);
+  const sweep = (extra) =>
+    run(['--source', 'json', '--json-map', '.', '--items-json', items, '--root', f.root,
+      '--auto', '--dry-run', '--no-summarise', '--sort', 'badge', ...extra],
+      { env: { HERDR_INGEST_CACHE: tmp('ingest-cache-') } });
+
+  // The lookahead keeps this to the worktree column; the branch column repeats
+  // the same token as `fix/item-b-<slug>`.
+  const spawned = (r) => r.out.match(/item-[abc](?=\s)/g);
+
+  assert.deepEqual(spawned(sweep(['--badge-order', 'critical,medium,low'])),
+    ['item-b', 'item-c', 'item-a']);
+
+  // Reversing the ranking reverses the sweep, which proves the flag is what
+  // ordered it rather than any incidental payload order.
+  assert.deepEqual(spawned(sweep(['--badge-order', 'low,medium,critical'])),
+    ['item-a', 'item-c', 'item-b']);
+});
+
+test('--badge-order beats the ranking the source declared', { skip: !HAS_JQ || !HAS_GIT }, () => {
+  // sentry ranks fatal > error > warning in its own file; the flag inverts it.
+  const r = dryRun(['--no-summarise', '--sort', 'badge', '--badge-order', 'warning,error']);
+  assert.deepEqual(r.out.match(/PROJ-\w+/g), ['PROJ-9Z', 'PROJ-4F'], 'warning before error');
+});
+
 test('--updated-last and --created-last drop what falls outside the window', { skip: !HAS_JQ || !HAS_GIT }, () => {
   // The fixture timestamps are fixed in the past, so any real window excludes
   // both items and a very wide one keeps them.
@@ -1134,7 +1167,8 @@ test('the skill and the manifest agree with the code', () => {
   for (const flag of [
     '--source', '--profile', '--root', '--main', '--base', '--prefix',
     '--worktree-template', '--branch-template', '--items-json',
-    '--badge', '--state', '--label', '--match', '--updated-last', '--created-last',
+    '--badge', '--badge-order', '--state', '--label', '--match',
+    '--updated-last', '--created-last',
     '--sort', '--limit', '--summarise', '--no-summarise', '--prompt',
     '--prompt-template', '--no-prompt', '--agent', '--auto', '--max-spaces',
     '--watch', '--interval', '--respawn', '--no-focus', '--dry-run', '--pane',

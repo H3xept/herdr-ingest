@@ -982,7 +982,7 @@ usage:
                [--items-json FILE]
                [--badge CSV] [--state CSV] [--label CSV] [--match REGEX]
                [--updated-last WINDOW] [--created-last WINDOW]
-               [--sort KEY] [--limit N]
+               [--badge-order CSV] [--sort KEY] [--limit N]
                [--summarise CMD | --no-summarise]
                [--prompt CMD | --prompt-template FILE | --no-prompt]
                [--agent CMD]
@@ -1025,6 +1025,8 @@ select:
   --match REGEX        keep items whose title or subtitle matches, case-insensitive
   --updated-last WINDOW  keep items updated within 5m, 2h, 2d, 1w
   --created-last WINDOW  keep items created within that window
+  --badge-order CSV    rank badges for --sort badge, most severe first; the
+                       source supplies its own, a generic payload needs this
   --sort KEY           updated, created, age, badge, title, key or none
   --limit N            items to keep (default: $HERDR_INGEST_DEFAULT_LIMIT)
 
@@ -1098,7 +1100,7 @@ herdr_ingest_main() {
   local watch=0 interval="$HERDR_INGEST_DEFAULT_INTERVAL"
   local source_flag="" profile_flag=""
   local source_spec profile
-  local badges="" states="" labels=""
+  local badges="" states="" labels="" badge_order=""
   local resolved sweep_rc help=0 version=0
 
   # --source and --profile come out of the argv first, because both decide what
@@ -1180,6 +1182,7 @@ herdr_ingest_main() {
       --branch-template) HERDR_INGEST_BRANCH_TEMPLATE="${2:-}"; shift 2 ;;
       --items-json) HERDR_INGEST_ITEMS_FILE="${2:-}"; shift 2 ;;
       --badge) badges="${2:-}"; shift 2 ;;
+      --badge-order) badge_order="${2:-}"; shift 2 ;;
       --state) states="${2:-}"; shift 2 ;;
       --label) labels="${2:-}"; shift 2 ;;
       --match) HERDR_INGEST_MATCH="${2:-}"; shift 2 ;;
@@ -1246,6 +1249,10 @@ herdr_ingest_main() {
 
   [ -n "$prefix" ] && HERDR_INGEST_PREFIX="$prefix"
   HERDR_INGEST_BADGES="$(herdr_ingest_csv_json "$badges")"
+  # A flag beats the source's own ranking. The source ships the ranking it knows
+  # (sentry: fatal > error > warning), but a generic payload carries whatever
+  # words its tracker uses, so --sort badge is inert until someone names them.
+  [ -n "$badge_order" ] && HERDR_INGEST_BADGE_ORDER="$(herdr_ingest_csv_json "$badge_order")"
   HERDR_INGEST_STATES="$(herdr_ingest_csv_json "$states")"
   HERDR_INGEST_LABELS="$(herdr_ingest_csv_json "$labels")"
 

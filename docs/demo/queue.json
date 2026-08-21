@@ -1,0 +1,106 @@
+[
+  {
+    "key": "ENG-418",
+    "ref": "ENG-418",
+    "title": "Checkout charges the last line item at full price",
+    "subtitle": "services/checkout/total.rb in apply_discounts",
+    "url": "https://tracker.example.com/acme/ENG-418",
+    "badge": "critical",
+    "state": "triage",
+    "created": "2026-08-14T09:12:00Z",
+    "updated": "2026-08-20T16:40:00Z",
+    "labels": ["billing", "regression", "customer-reported"],
+    "fields": [
+      { "name": "component", "value": "checkout" },
+      { "name": "reporter", "value": "avery" },
+      { "name": "affected orders", "value": "1,204" }
+    ],
+    "body": "A percentage coupon is applied per line item, but the running total is summed *before* the last discount is subtracted.\n\n1. Add three items to a cart.\n2. Apply a 10% coupon.\n3. The third line is charged at full price.\n\nThe accumulator in `apply_discounts` is seeded from the pre-discount subtotal. Fold the discount into each line before summing, not after."
+  },
+  {
+    "key": "ENG-421",
+    "ref": "ENG-421",
+    "title": "Session cookie is not marked SameSite",
+    "subtitle": "gateway/session.go in issueCookie",
+    "url": "https://tracker.example.com/acme/ENG-421",
+    "badge": "critical",
+    "state": "triage",
+    "branch": "fix/session-samesite",
+    "created": "2026-08-18T11:02:00Z",
+    "updated": "2026-08-20T08:15:00Z",
+    "labels": ["security"],
+    "fields": [
+      { "name": "component", "value": "gateway" },
+      { "name": "reporter", "value": "security-scan" }
+    ],
+    "body": "`issueCookie` sets `Secure` and `HttpOnly` but omits `SameSite`, so the session rides along on cross-site POSTs.\n\nSet `SameSite=Lax`. The one flow that needs `None` is the embedded widget; give that its own cookie rather than weakening the default."
+  },
+  {
+    "key": "ENG-402",
+    "ref": "ENG-402",
+    "title": "Retry budget is shared across every downstream",
+    "subtitle": "gateway/rpc/client.go in newClient",
+    "url": "https://tracker.example.com/acme/ENG-402",
+    "badge": "high",
+    "state": "backlog",
+    "created": "2026-08-04T14:30:00Z",
+    "updated": "2026-08-19T09:55:00Z",
+    "labels": ["reliability"],
+    "fields": [
+      { "name": "component", "value": "gateway" },
+      { "name": "reporter", "value": "priya" }
+    ],
+    "body": "One slow downstream exhausts the shared retry budget and starves every other call in the process.\n\nGive each downstream its own budget, keyed by service name."
+  },
+  {
+    "key": "ENG-430",
+    "ref": "ENG-430",
+    "title": "Webhook signature check is timing-dependent",
+    "subtitle": "webhooks/verify.py in check_signature",
+    "url": "https://tracker.example.com/acme/ENG-430",
+    "badge": "high",
+    "state": "triage",
+    "created": "2026-08-19T15:44:00Z",
+    "updated": "2026-08-20T17:01:00Z",
+    "labels": ["security"],
+    "fields": [
+      { "name": "component", "value": "webhooks" },
+      { "name": "reporter", "value": "security-scan" }
+    ],
+    "body": "`check_signature` compares digests with `==`, which short-circuits on the first differing byte.\n\nUse `hmac.compare_digest`."
+  },
+  {
+    "key": "ENG-377",
+    "ref": "ENG-377",
+    "title": "Invoice PDF renders the wrong currency symbol in de-DE",
+    "subtitle": "billing/invoice/render.ts in formatMoney",
+    "url": "https://tracker.example.com/acme/ENG-377",
+    "badge": "medium",
+    "state": "backlog",
+    "created": "2026-07-28T10:20:00Z",
+    "updated": "2026-08-17T13:10:00Z",
+    "labels": ["billing", "i18n"],
+    "fields": [
+      { "name": "component", "value": "billing" },
+      { "name": "reporter", "value": "sam" }
+    ],
+    "body": "`formatMoney` hardcodes the symbol position, so `de-DE` renders `€1.234,56` as `1.234,56€` with no space.\n\nUse `Intl.NumberFormat` and drop the hand-rolled table."
+  },
+  {
+    "key": "ENG-441",
+    "ref": "ENG-441",
+    "title": "Typo in the onboarding email subject line",
+    "subtitle": "notifications/templates/welcome.txt",
+    "url": "https://tracker.example.com/acme/ENG-441",
+    "badge": "low",
+    "state": "triage",
+    "created": "2026-08-20T09:00:00Z",
+    "updated": "2026-08-20T09:00:00Z",
+    "labels": ["copy"],
+    "fields": [
+      { "name": "component", "value": "notifications" },
+      { "name": "reporter", "value": "dana" }
+    ],
+    "body": "\"Welcome to you new account\" should read \"your\"."
+  }
+]

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# The login shell lazy-brief drops into when you decline the gate.
+#
+# lazy-brief execs `"$SHELL" -l`, and a real login shell reads the recording
+# machine's profile, which puts its hostname and its user in the last frame of
+# the GIF. This ignores the -l and reads one rc file that sets nothing but the
+# prompt, so the frame after a decline shows a bare `$`.
+#
+# Demo scaffolding only: docs/ is not in package.json `files`, and nothing in
+# lib/ or bin/ refers to it.
+exec /bin/bash --noprofile --rcfile "$(dirname "$0")/../bashrc" -i

@@ -19,6 +19,10 @@ herdr-ingest --source linear --team ENG --root ~/farm --auto --dry-run   # see i
 herdr-ingest --source linear --team ENG --root ~/farm --auto             # do it
 ```
 
+<div align="center">
+  <img src="docs/sweep.gif" alt="A queue of six items becomes six ready worktrees, then the same sweep narrowed by label" width="100%">
+</div>
+
 Fifteen items become fifteen ready workspaces: each on its own branch, each with
 the item's detail already written down, each one keystroke away from an agent
 that has the context. The keystroke is the product. A sweep is free until you
@@ -50,6 +54,14 @@ checkout on its own branch, and a herdr space holding one zellij session split
 vertically: an interactive shell and `nvim .` on the left, one brief pane on the
 right. The brief pane prints the item and waits. **No pane ever starts an agent
 by itself.**
+
+<div align="center">
+  <img src="docs/gate.gif" alt="The brief pane shows the item, then waits: y starts the agent on the brief, anything else drops to a shell" width="100%">
+</div>
+
+Both halves of that are the point. `y` is the only thing that spends an agent
+turn; anything else, including EOF, leaves you a shell in a worktree that is
+already on the right branch with the brief still on disk.
 
 ## Install
 
@@ -181,6 +193,10 @@ bin/herdr-ingest --source examples/sources/todo.sh \
   --root ~/farm --auto --dry-run --sort badge
 ```
 
+<div align="center">
+  <img src="docs/adapter.gif" alt="Five functions in one bash file, then the same engine sweeping TODO comments into worktrees" width="100%">
+</div>
+
 It matches the literal text, so pointing it at this repo finds this paragraph
 rather than any real work. Point it at code.
 
@@ -278,6 +294,7 @@ So a profile can set anything `--help` names: `HERDR_INGEST_ROOT`,
 |`--updated-last WINDOW`|updated within `5m`, `2h`, `2d`, `1w`|
 |`--created-last WINDOW`|created within that window|
 |`--sort KEY`|`updated`, `created`, `age`, `badge`, `title`, `key`, `none`|
+|`--badge-order CSV`|rank badges for `--sort badge`, most severe first; a source ships its own, a generic payload needs this|
 |`--limit N`|items to keep|
 |`--items-json FILE`|read the payload from a file instead of fetching|
 
