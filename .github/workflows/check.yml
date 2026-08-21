@@ -1,0 +1,54 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Two gates. The bash gate parses and lints every shipped script, because the
+  # product is bash and a syntax error ships silently otherwise. The test gate
+  # runs the whole suite, which is fully offline by design: no herdr, no zellij,
+  # no fzf, no agent and no token, so CI runs exactly what a contributor runs.
+  bash:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse every shipped script
+        run: |
+          for f in bin/herdr-ingest lazy-brief lib/herdr-ingest.sh \
+                   lib/sources/*.sh profiles/*.sh examples/sources/*.sh \
+                   examples/summarise-git-blame; do
+            bash -n "$f" || exit 1
+          done
+
+      - name: Lint every shipped script
+        run: |
+          shellcheck -S warning bin/herdr-ingest lazy-brief lib/herdr-ingest.sh \
+            lib/sources/*.sh profiles/*.sh examples/sources/*.sh \
+            examples/summarise-git-blame
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # jq and git are the only runtime dependencies the suite exercises. Both
+      # are already on the GitHub runners; this asserts it rather than assuming.
+      - name: Check the runtime dependencies
+        run: |
+          jq --version
+          git --version
+          bash --version | head -1
+
+      - name: Run the suite
+        run: npm test

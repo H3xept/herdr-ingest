@@ -1,0 +1,45 @@
+{
+  "name": "herdr-ingest",
+  "version": "1.0.0",
+  "description": "One worktree, one herdr space and one gated agent brief per work item, from Sentry, Linear, GitHub or any JSON pipeline.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "herdr-ingest": "bin/herdr-ingest"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "profiles/",
+    "examples/",
+    "skills/",
+    "herdr-plugin.toml",
+    "lazy-brief",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "herdr",
+    "herdr-plugin",
+    "zellij",
+    "git-worktree",
+    "coding-agent",
+    "agent-workspace",
+    "sentry",
+    "linear",
+    "github",
+    "triage",
+    "dev-workflow",
+    "agent-skill"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

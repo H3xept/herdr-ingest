@@ -1,0 +1,51 @@
+# herdr-ingest, as a herdr plugin.
+#
+# Link it from a checkout:   herdr plugin link /path/to/this/repo
+# Run it directly:           bin/herdr-ingest ...
+#
+# There is no build step: the plugin is bash, and it needs git, jq and curl on
+# PATH. Every entrypoint reads its farm and its source from flags, a profile, or
+# the environment, so nothing here depends on a cwd.
+#
+# Set HERDR_INGEST_PROFILE to a profile file to give these entries their
+# defaults — the source, the farm, the caps, and the two replaceable stages.
+# Without one they fall back to the sentry source and the built-in brief.
+
+id = "h3xept.herdr-ingest"
+name = "Ingest to spaces"
+version = "1.0.0"
+min_herdr_version = "0.8.0"
+description = "One herdr space per work item, from Sentry, Linear, GitHub or any JSON pipeline"
+platforms = ["linux", "macos"]
+
+# The picker. A popup keeps the tiled layout untouched while fzf runs; every
+# marked item becomes one space, and each space's right-hand pane waits for `y`.
+[[panes]]
+id = "pick"
+title = "Pick items to spawn"
+placement = "popup"
+width = "88%"
+height = 30
+command = ["bash", "bin/herdr-ingest", "--pane"]
+
+# The same sweep with no picker, for a keybinding that should not steal the
+# screen. --max-spaces caps how many spaces one press may create.
+[[actions]]
+id = "sweep"
+title = "Sweep items into spaces"
+contexts = ["workspace", "pane"]
+command = ["bash", "bin/herdr-ingest", "--auto", "--max-spaces", "3"]
+
+# A sweep that writes briefs and layouts but creates nothing, for checking what
+# a real sweep would do.
+[[actions]]
+id = "dry-run"
+title = "Show what a sweep would spawn"
+contexts = ["workspace", "pane"]
+command = ["bash", "bin/herdr-ingest", "--auto", "--dry-run"]
+
+[[actions]]
+id = "sources"
+title = "List ingestion sources"
+contexts = ["workspace", "pane"]
+command = ["bash", "bin/herdr-ingest", "sources"]

@@ -1,0 +1,62 @@
+[
+  {
+    "key": "CANON-1",
+    "title": "Only key and title are required"
+  },
+  {
+    "key": "CANON-2",
+    "ref": "#204",
+    "title": "Checkout total ignores the discount on the last line item",
+    "subtitle": "services/checkout/total.rb in apply_discounts",
+    "url": "https://tracker.example.com/acme/checkout/204",
+    "badge": "high",
+    "state": "in_progress",
+    "created": "2026-02-03T09:12:00Z",
+    "updated": "2026-02-11T16:40:00Z",
+    "labels": ["billing", "regression", "customer-reported"],
+    "fields": [
+      {"name": "component", "value": "checkout"},
+      {"name": "reporter", "value": "avery"},
+      {"name": "occurrences", "value": "37"},
+      {"name": "first_seen", "value": "2026-02-03"}
+    ],
+    "body": "The cart applies a percentage discount per line item, but the running total is summed before the last discount is subtracted.\n\nSteps to reproduce:\n\n1. Add three items to a cart.\n2. Apply a 10% coupon.\n3. Observe that the third line's discount is charged at full price.\n\nThe fix is to fold the discount into each line before summing, not after. See `apply_discounts` — the accumulator is seeded from the pre-discount subtotal.",
+    "raw": {"source": "example", "internal_id": "acme-204"}
+  },
+  {
+    "key": "CANON-3",
+    "ref": "#205",
+    "title": "Session cookie is not marked SameSite",
+    "subtitle": "middleware/session.rb",
+    "url": "https://tracker.example.com/acme/checkout/205",
+    "branch": "fix/session-samesite-205",
+    "badge": "critical",
+    "state": "triage",
+    "created": "2026-02-09T11:00:00Z",
+    "updated": "2026-02-12T08:15:00Z",
+    "labels": ["security"],
+    "fields": [
+      {"name": "component", "value": "auth"},
+      {"name": "suggested_branch", "value": "fix/session-samesite-205"}
+    ],
+    "body": "The session cookie ships without a `SameSite` attribute, so it rides along on cross-site requests. Set it to `Lax` and confirm the login flow still round-trips.\n\nThe tracker already proposed a branch name; the engine will cut exactly that branch because `branch` is set on this item.",
+    "raw": {"source": "example", "internal_id": "acme-205"}
+  },
+  {
+    "key": "CANON-4",
+    "ref": "#206",
+    "title": "Typo in the onboarding email subject line",
+    "subtitle": "templates/email/welcome.txt",
+    "url": "https://tracker.example.com/acme/checkout/206",
+    "badge": "low",
+    "state": "open",
+    "created": "2026-01-28T14:22:00Z",
+    "updated": "2026-02-04T10:05:00Z",
+    "labels": ["copy", "good-first-item"],
+    "fields": [
+      {"name": "component", "value": "notifications"}
+    ],
+    "body": "The welcome email subject reads \"Welcom aboard\". One-character fix.\n\nThis item carries a distinct `low` badge so that `--sort badge` visibly orders it against the `critical` and `high` items, and `--badge low` selects only it.",
+    "raw": {"source": "example", "internal_id": "acme-206"}
+  }
+]

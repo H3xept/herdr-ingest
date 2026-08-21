@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Lazy brief: show the item brief, wait for `y`, then exec the agent on it.
+# Declining leaves an interactive shell so the zellij pane stays useful.
+#
+# usage: lazy-brief <brief-path|-> <ref> [title...]
+#
+# A brief path of `-` means the run had no prompt stage (`--no-prompt`, or a
+# prompt hook that produced nothing). The pane then offers a bare agent session
+# in this worktree instead of a brief, and still waits for `y` first.
+#
+# The agent is $HERDR_INGEST_AGENT, default `omp`. Nothing here starts it
+# without an explicit `y`: that is the cost-control contract of the product.
+
+set -uo pipefail
+
+brief="${1:--}"
+ref="${2:-item}"
+shift 2 2>/dev/null || true
+title="${*:-}"
+
+agent="${HERDR_INGEST_AGENT:-omp}"
+
+bold=$'\033[1m'; dim=$'\033[2m'; grn=$'\033[32m'; ylw=$'\033[33m'; red=$'\033[31m'; off=$'\033[0m'
+
+printf '%s%s%s\n' "$bold" "${PWD/#$HOME/~}" "$off"
+printf '%s%s%s %s\n\n' "$ylw" "$ref" "$off" "$title"
+
+# No brief: either the run skipped stage 5 on purpose, or it was configured to
+# write one and did not. Both end at the same offer, and the wording says which.
+if [ "$brief" = "-" ]; then
+  printf '%sno brief — this run has no prompt stage%s\n\n' "$dim" "$off"
+  printf 'start %s in this worktree? [%sy%s/N] ' "$agent" "$grn" "$off"
+  read -r ans || ans=""
+  case "$ans" in
+    [yY]*) exec $agent ;;
+  esac
+  printf '\n%sskipped — start it later with:%s %s\n\n' "$dim" "$off" "$agent"
+  exec "${SHELL:-/bin/zsh}" -l
+fi
+
+if [ ! -f "$brief" ]; then
+  printf '%sno brief at %s%s\n\n' "$red" "$brief" "$off"
+  exec "${SHELL:-/bin/zsh}" -l
+fi
+
+sed -n '1,60p' "$brief"
+printf '\n%sbrief %s%s\n\n' "$dim" "$brief" "$off"
+printf 'start %s on this brief? [%sy%s/N] ' "$agent" "$grn" "$off"
+read -r ans || ans=""
+case "$ans" in
+  [yY]*) exec $agent "@$brief" ;;
+esac
+
+printf '\n%sskipped — start it later with:%s %s "@%s"\n\n' "$dim" "$off" "$agent" "$brief"
+exec "${SHELL:-/bin/zsh}" -l

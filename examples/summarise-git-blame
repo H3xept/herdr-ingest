@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# An example stage-4 summariser: who last touched the code this item blames.
+#
+#   herdr-ingest --summarise 'examples/summarise-git-blame "$1" "$2"'
+#
+# Contract (see README, "Stage 4"):
+#   $1  path to the item JSON
+#   $2  path to the worktree, which may not exist yet during a dry run
+#   stdin  the item JSON as well
+#   stdout markdown; it becomes the brief's Context section
+#   a non-zero exit costs the item its summary, never its space
+#
+# The item's subtitle is a culprit like `app/services/quote.py in build`, so the
+# first whitespace-delimited token that looks like a path is the file to blame.
+
+set -uo pipefail
+
+item="${1:-}"
+worktree="${2:-}"
+
+[ -f "$item" ] || exit 0
+
+# A path-shaped token from the subtitle, then from the fields, then give up.
+file="$(jq -r '
+  [.subtitle, ((.fields // [])[] | select(.name == "culprit") | .value)]
+  | map(select(. != null and . != ""))
+  | join(" ")
+  | [scan("[A-Za-z0-9_./-]+\\.[A-Za-z]{1,4}")]
+  | (.[0] // "")' "$item" 2>/dev/null)"
+
+[ -n "$file" ] || exit 0
+
+# The worktree is the interesting checkout, but a dry run has not cut it yet, so
+# fall back to the main checkout the engine passed in the environment.
+repo="$worktree"
+[ -d "$repo/.git" ] || [ -f "$repo/.git" ] || repo="${HERDR_INGEST_MAIN_CHECKOUT:-$worktree}"
+[ -d "$repo" ] || exit 0
+
+# Resolve the culprit against the checkout: a Sentry culprit is often relative to
+# a package root rather than to the repository root.
+resolved="$file"
+if [ ! -f "$repo/$resolved" ]; then
+  resolved="$(git -C "$repo" ls-files "*${file##*/}" 2>/dev/null | head -1)"
+fi
+[ -n "$resolved" ] && [ -f "$repo/$resolved" ] || exit 0
+
+printf 'Recent history of `%s`:\n\n```\n' "$resolved"
+git -C "$repo" log -3 --date=short --format='%h %ad %an  %s' -- "$resolved" 2>/dev/null
+printf '```\n'
