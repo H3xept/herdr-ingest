@@ -3,6 +3,20 @@
 All notable changes appear in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Every herdr call goes through `HERDR_BIN_PATH` when herdr sets it, so an
+  entrypoint drives the herdr that launched it rather than whichever `herdr`
+  comes first on `PATH`.
+
+### Added
+
+- Install from GitHub with `herdr plugin install H3xept/herdr-ingest`; the
+  README says what the install preview shows and how to pin a revision.
+- `SECURITY.md`: how to report a vulnerability, and what is in scope.
+
 ## [1.0.0] - 2026-08-21
 
 First public release. Extracted from the Sentry triage command in

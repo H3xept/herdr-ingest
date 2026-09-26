@@ -35,6 +35,10 @@ HERDR_INGEST_HOME="$(cd -- "$HERDR_INGEST_LIB_DIR/.." && pwd)"
 HERDR_INGEST_SELF="$HERDR_INGEST_HOME/bin/herdr-ingest"
 HERDR_INGEST_SOURCE_DIR="$HERDR_INGEST_LIB_DIR/sources"
 
+# herdr through HERDR_BIN_PATH when herdr launched us, as herdr's plugin docs
+# advise: it names the running binary, whatever the PATH says.
+herdr_ingest_herdr() { command "${HERDR_BIN_PATH:-herdr}" "$@"; }
+
 # Defaults. Every one is overridable by a flag; see herdr_ingest_usage.
 HERDR_INGEST_DEFAULT_SOURCE="sentry"
 HERDR_INGEST_DEFAULT_ROOT="$HOME/farm"
@@ -658,7 +662,7 @@ EOF
 herdr_ingest_ws_for_cwd() {
   local cwd="$1" phys
   phys="$(cd -- "$cwd" 2>/dev/null && pwd -P)" || phys="$cwd"
-  herdr pane list 2>/dev/null \
+  herdr_ingest_herdr pane list 2>/dev/null \
     | jq -r --arg a "$cwd" --arg b "$phys" \
       'first(.result.panes[]? | select(.cwd == $a or .cwd == $b) | .workspace_id) // ""'
 }
@@ -750,14 +754,14 @@ herdr_ingest_spawn() {
   # herdr cuts the worktree and opens its space in one call. An existing
   # checkout is opened instead, so a farm somebody else populated still works.
   if [ -e "$path" ]; then
-    out="$(herdr worktree open --cwd "$HERDR_INGEST_MAIN" --path "$path" \
+    out="$(herdr_ingest_herdr worktree open --cwd "$HERDR_INGEST_MAIN" --path "$path" \
       --label "$ref" --no-focus 2>&1)" || {
       printf '  %-20s %-34s open failed: %s\n' "$ref" "$rel" \
         "$(printf '%s' "$out" | jq -r '.error.message // .' 2>/dev/null | tr '\n' ' ' | cut -c1-90)"
       return 1
     }
   else
-    out="$(herdr worktree create --cwd "$HERDR_INGEST_MAIN" --branch "$branch" \
+    out="$(herdr_ingest_herdr worktree create --cwd "$HERDR_INGEST_MAIN" --branch "$branch" \
       --base "$HERDR_INGEST_BASE" --path "$path" --label "$ref" --no-focus 2>&1)" || {
       printf '  %-20s %-34s create failed: %s\n' "$ref" "$rel" \
         "$(printf '%s' "$out" | jq -r '.error.message // .' 2>/dev/null | tr '\n' ' ' | cut -c1-90)"
@@ -772,8 +776,8 @@ herdr_ingest_spawn() {
     return 1
   fi
 
-  herdr pane rename "$pane" "zellij" >/dev/null 2>&1 || true
-  herdr pane run "$pane" "exec $boot" >/dev/null
+  herdr_ingest_herdr pane rename "$pane" "zellij" >/dev/null 2>&1 || true
+  herdr_ingest_herdr pane run "$pane" "exec $boot" >/dev/null
   : >"$HERDR_INGEST_STATE_DIR/$keyslug"
   if [ -z "$HERDR_INGEST_FIRST_WS" ]; then HERDR_INGEST_FIRST_WS="$ws"; fi
   printf '  %-20s %-34s %-4s space created on %s\n' "$ref" "$rel" "$ws" "$branch"
@@ -1317,7 +1321,7 @@ herdr_ingest_main() {
   # A dry run only writes cache files, so it needs neither herdr nor zellij.
   if [ "$HERDR_INGEST_DRY" = 0 ]; then
     command -v zellij >/dev/null || { echo "zellij not found" >&2; exit 1; }
-    command -v herdr >/dev/null || { echo "herdr not found" >&2; exit 1; }
+    command -v "${HERDR_BIN_PATH:-herdr}" >/dev/null || { echo "herdr not found" >&2; exit 1; }
     [ -x "${HERDR_INGEST_LAZY:-$HERDR_INGEST_HOME/lazy-brief}" ] \
       || { echo "not executable: ${HERDR_INGEST_LAZY:-$HERDR_INGEST_HOME/lazy-brief}" >&2; exit 1; }
   fi
@@ -1332,7 +1336,7 @@ herdr_ingest_main() {
     # the first new one at the end, and never during a watch.
     if [ "$HERDR_INGEST_DRY" = 0 ] && [ -n "$HERDR_INGEST_FIRST_WS" ] \
       && [ "$HERDR_INGEST_FOCUS" = 1 ] && [ "$watch" = 0 ]; then
-      herdr workspace focus "$HERDR_INGEST_FIRST_WS" >/dev/null 2>&1 || true
+      herdr_ingest_herdr workspace focus "$HERDR_INGEST_FIRST_WS" >/dev/null 2>&1 || true
       printf '\nfocused %s — switch spaces with the picker (prefix+w)\n' "$HERDR_INGEST_FIRST_WS"
     fi
 

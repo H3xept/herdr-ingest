@@ -964,6 +964,19 @@ test('a real sweep cuts one worktree per item and runs the boot script in its pa
   assert.ok(fs.existsSync(path.join(cache, 'sentry', 'spawned', '4512345678')), 'the spawn is recorded');
 });
 
+test('a sweep launched by herdr calls the herdr binary HERDR_BIN_PATH names', { skip: !HAS_JQ || !HAS_GIT }, () => {
+  const h = herdrStub();
+  const decoy = tmp('ingest-decoy-');
+  writeExec(path.join(decoy, 'herdr'), '#!/bin/sh\necho "the PATH herdr ran" >&2\nexit 1\n');
+  const f = farm();
+  const r = run(['--root', f.root, '--items-json', payload([SENTRY_PAYLOAD[0]]), '--auto', '--no-summarise', '--no-focus'], {
+    env: { PATH: `${decoy}:${h.path}`, HERDR_BIN_PATH: path.join(h.dir, 'herdr'), HERDR_INGEST_CACHE: tmp('ingest-cache-') },
+  });
+  assert.equal(r.code, 0, r.all);
+  assert.ok(!r.all.includes('the PATH herdr ran'));
+  assert.equal(h.calls().filter((c) => c.includes('worktree create')).length, 1);
+});
+
 test('a space already sitting in the worktree is reused, never duplicated', { skip: !HAS_JQ || !HAS_GIT }, () => {
   const f = farm();
   const cwd = path.join(f.root, 'sentry-4512345678');

@@ -1,5 +1,6 @@
 # herdr-ingest, as a herdr plugin.
 #
+# Install it from GitHub:    herdr plugin install H3xept/herdr-ingest
 # Link it from a checkout:   herdr plugin link /path/to/this/repo
 # Run it directly:           bin/herdr-ingest ...
 #

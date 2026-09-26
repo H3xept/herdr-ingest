@@ -65,11 +65,26 @@ already on the right branch with the brief still on disk.
 
 ## Install
 
+As a herdr plugin, from GitHub:
+
+```bash
+herdr plugin install H3xept/herdr-ingest
+```
+
+Or from a checkout:
+
 ```bash
 ./bin/herdr-ingest --help            # no install, run from this checkout
 export PATH="$PWD/bin:$PATH"        # once, to get a bare `herdr-ingest`
-herdr plugin link /path/to/this/repo # or run it as a herdr plugin
+herdr plugin link /path/to/this/repo # or link the checkout as a herdr plugin
 ```
+
+The plugin runs as your user, with your environment and the full herdr CLI.
+`herdr plugin install` shows the manifest and every command it runs before it
+installs; read them, and pin a revision with `--ref <tag-or-sha>` if you want
+one. See herdr's
+[trust and security guidance](https://herdr.dev/docs/plugins/#trust-and-security)
+and [SECURITY.md](SECURITY.md).
 
 Needs `bash`, `git`, `jq` and `curl`. `fzf` is needed only for the interactive
 picker. `herdr` and `zellij` are needed only to create real spaces — a dry run
@@ -349,7 +364,7 @@ product; do not bypass it.
 `herdr-plugin.toml` declares one popup pane and three actions:
 
 ```bash
-herdr plugin link /path/to/this/repo
+herdr plugin install H3xept/herdr-ingest   # or: herdr plugin link /path/to/this/repo
 herdr plugin pane open --plugin h3xept.herdr-ingest --entrypoint pick
 herdr plugin action invoke h3xept.herdr-ingest.sweep
 ```
